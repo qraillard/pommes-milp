@@ -1,0 +1,22 @@
+name: pommes-env
+channels:
+    - conda-forge
+dependencies:
+    - python=3.11
+    - pandas
+    - xarray
+    - linopy
+    - numpy
+    - pyyaml
+    - highspy
+    - h5netcdf
+    - notebook
+    - ipykernel
+    - ipython
+    - nbformat
+    - matplotlib
+    - pip
+    - pip:
+          - gurobipy
+          - xpress
+          - pommes[all]
