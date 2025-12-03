@@ -356,6 +356,8 @@ def add_process(
             downtime_constraints = downtime_constraints.where(downtime_mask, drop=True)
             m.add_constraints(downtime_constraints <= 1, name=f"minimum_downtime_constraint_{downtime}")
 
+    #TODO: apply maximum uptime and downtime constraints - need to create 2 new input parameters
+
     # Planning - process
 
     m.add_constraints(
