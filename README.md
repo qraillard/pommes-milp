@@ -4,7 +4,7 @@
 The framework enables to minimise the system costs to meet the energy services demand by modelling the investment
 and operating costs of energy conversion, storage and transport technologies.
 
-POMMES-MILP integrates a selection of POMMES modules—some of which have been adapted—alongside two new modules (one explicitly using MILP) and is dedicated to study industry process flexibility's impact on the electricity system.
+POMMES-MILP integrates a selection of POMMES modules (pulled from [version 0.2.3](https://git.persee.minesparis.psl.eu/energy-alternatives/pommes/-/tree/5df6a4683cb1767fa7a17284c5afe3abf35abf33) in July 2025)—some of which have been adapted—alongside two new modules (one explicitly using MILP) and is dedicated to study industry process flexibility's impact on the electricity system.
 
 ![POMMES-MILP_modules.png](docs/source/_static/POMMES-MILP_modules.png)
 
