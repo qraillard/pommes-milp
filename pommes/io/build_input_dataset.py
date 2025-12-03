@@ -107,7 +107,7 @@ def load_inputs_as_dict_of_df(
     dict_df = {}
 
     for (file, index_input) in file_index.items():
-
+        # print(file, index_input)
         logger.info("Start reading csv file: " + file + " ...")
         dict_df[file] =  pd.read_csv(
                             f"{path}/{file}",
