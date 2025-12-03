@@ -178,20 +178,25 @@ def add_process(
     operation_process_state = m.add_variables(
         name="operation_process_state",
         coords=[p.area, p.process_tech, p.hour, p.year_op],
-        binary=True
+        # binary=True
+        integer=True
     )
 
     operation_process_startup= m.add_variables(
         name="operation_process_startup",
         coords=[p.area, p.process_tech, p.hour, p.year_op],
-        binary=True
+        # binary=True
+        integer=True
     )
 
     operation_process_shutdown = m.add_variables(
         name="operation_process_shutdown",
         coords=[p.area, p.process_tech, p.hour, p.year_op],
-        binary=True
+        # binary=True
+        integer=True
     )
+
+
 
     operation_process_nb_units = m.add_variables(
         name="operation_process_nb_units",
@@ -280,7 +285,7 @@ def add_process(
         (operation_process_power
         - operation_process_power.shift(hour=1))/p.time_step_duration
         # - p.process_ramp_up * p.process_unit_size
-        -p.process_ramp_up * operation_process_power_capacity
+        -p.process_ramp_up * operation_process_power_capacity * operation_process_state
         <= 0,
         name="operation_process_ramp_up_constraint",
         mask=np.isfinite(p.process_ramp_up) * (p.hour != p.hour[0]),
@@ -291,16 +296,43 @@ def add_process(
         (operation_process_power.shift(hour=1)
         - operation_process_power)/p.time_step_duration
         # - p.process_ramp_down * p.process_unit_size
-        - p.process_ramp_down * operation_process_power_capacity
+        - p.process_ramp_down * operation_process_power_capacity * operation_process_state
         <= 0,
         name="operation_process_ramp_down_constraint",
         mask=np.isfinite(p.process_ramp_down) * (p.hour != p.hour[0]),
     )
 
+    m.add_constraints(operation_process_state - operation_process_nb_units <= 0,
+                      name="operation_process_state_nb_units", mask=np.isfinite(p.process_unit_size) * (p.process_unit_size > 0 ))
+
+    m.add_constraints(operation_process_startup - operation_process_nb_units <= 0,
+                      name="operation_process_startup_nb_units",
+                      mask=np.isfinite(p.process_unit_size) * (p.process_unit_size > 0))
+
+    m.add_constraints(operation_process_shutdown - operation_process_state <= 0, #cannot stop more units than the ones already on
+                      name="operation_process_shutdown_nb_units",
+                      mask=np.isfinite(p.process_unit_size) * (p.process_unit_size > 0))
+
+    m.add_constraints(operation_process_nb_units <= 1, #if no process unit size specified, only 1 unit can be installed
+                      name="operation_process_nb_units_max_if_no_unit_size",
+                      mask=np.nan_to_num(p.process_unit_size)==0)
+
     # Operation capacity
     m.add_constraints(
         operation_process_power_capacity- operation_process_nb_units * p.process_unit_size ==0,
         name="operation_process_power_nb_units_constraint", mask=np.isfinite(p.process_unit_size) * (p.process_unit_size > 0),
+    )
+
+    m.add_constraints(
+        operation_process_power_capacity <= p.process_power_capacity_max,
+        name="operation_process_power_capacity_max_constraint",
+        mask=np.isfinite(p.process_power_capacity_max),
+    )
+
+    m.add_constraints(
+        operation_process_power_capacity >= p.process_power_capacity_min,
+        name="operation_conversion_power_capacity_min_constraint",
+        mask=np.isfinite(p.process_power_capacity_min),
     )
 
     # Operation - process intermediate variables
@@ -325,7 +357,7 @@ def add_process(
         ),
     )
 
-    m.add_constraints(operation_process_startup+operation_process_shutdown<=1,
+    m.add_constraints(operation_process_startup+operation_process_shutdown-operation_process_nb_units<=0,
                       name="operation_process_startupshutdown_def",)
 
     m.add_constraints(operation_process_startup - operation_process_shutdown
@@ -333,6 +365,7 @@ def add_process(
         == 0 ,
                       name="operation_process_state_def",
                       mask= (p.hour != p.hour[0]))
+
 
 
     uptime_mask = min_uptime > 1
